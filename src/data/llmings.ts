@@ -146,12 +146,12 @@ const PERSONALITIES: Personality[] = [
 const TRAITS: Trait[] = ["Brave", "Cowardly", "Precise", "Chaotic", "Lucky"];
 
 const CLASSES: CharacterClass[] = [
-  "barbarian",
-  "wizard",
-  "thief",
-  "rogue",
-  "druid",
-  "paladin",
+  "Barbarian",
+  "Wizard",
+  "Thief",
+  "Rogue",
+  "Druid",
+  "Paladin",
 ];
 
 const VOICES: VoiceStyle[] = [

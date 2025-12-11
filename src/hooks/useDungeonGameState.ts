@@ -80,12 +80,12 @@ function reviveState(raw: unknown): DungeonState | null {
   const party: LLMing[] = (value.party as LLMing[]).map((p, idx) => {
     // Backwards-compatible revive for when characterClass and deathTag did not exist yet.
     const classes: LLMing["characterClass"][] = [
-      "barbarian",
-      "wizard",
-      "thief",
-      "rogue",
-      "druid",
-      "paladin",
+      "Barbarian",
+      "Wizard",
+      "Thief",
+      "Rogue",
+      "Druid",
+      "Paladin",
     ];
     const fallbackClass = classes[idx % classes.length];
     return {
