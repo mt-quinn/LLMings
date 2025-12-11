@@ -25,6 +25,7 @@ type ResolveResponse = {
   success: boolean;
   vignette: string;
   deathTag?: string | null;
+  deathSummary?: string | null;
 };
 
 export function Game() {
@@ -371,6 +372,7 @@ export function Game() {
         success,
         vignette,
         deathTag: !success ? data.deathTag ?? null : null,
+        deathSummary: !success ? data.deathSummary ?? null : null,
       };
 
       applyEncounterResult(currentEncounter.index, result);
@@ -750,7 +752,7 @@ function EndScreen(props: {
               </div>
               {deathEntry && (
                 <div className="text-[0.8rem] text-llm-text whitespace-pre-wrap">
-                  {deathEntry.vignette}
+                  {deathEntry.deathSummary ?? deathEntry.vignette}
                 </div>
               )}
             </div>

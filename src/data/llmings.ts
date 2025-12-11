@@ -74,6 +74,8 @@ export type EncounterResult = {
   vignette: string;
   // Two-word description of death for failure cases (e.g. "red mist"), null for successes.
   deathTag?: string | null;
+  // One-sentence description of how they died and in what context, used on the end-of-run summary screen.
+  deathSummary?: string | null;
 };
 
 // Simple deterministic RNG so that daily runs are stable per date key.

@@ -86,6 +86,7 @@ The player has chosen ONE character's idea to attempt at the current obstacle.
 Your job:
 1) Decide whether the attempt is a SUCCESS or a FAILURE.
 2) Write a very short vignette describing what happens, in the style of the chosen character's voice.
+3) For FAILURE cases, also provide a separate "deathSummary" field in your JSON: one concise sentence clearly describing how and in what context this character dies, suitable for an end-of-run recap (no dialogue, just a clear third-person description).
 
 Target difficulty over many runs:
 - Most individual attempts should still be dangerous: SUCCESS should feel earned, not automatic.
@@ -149,7 +150,12 @@ Respond ONLY with strict JSON in this shape (no extra text):
 
 function parseResolveResponse(
   raw: string,
-): { success: boolean; vignette: string; deathTag: string | null } {
+): {
+  success: boolean;
+  vignette: string;
+  deathTag: string | null;
+  deathSummary: string | null;
+} {
   try {
     const parsed = JSON.parse(raw) as {
       success?: boolean;
@@ -168,6 +174,10 @@ function parseResolveResponse(
           parsed.success === false && parsed.deathTag
             ? parsed.deathTag.toString()
             : null,
+        deathSummary:
+          parsed.success === false && (parsed as any).deathSummary
+            ? (parsed as any).deathSummary.toString()
+            : null,
       };
     }
   } catch {
@@ -180,6 +190,7 @@ function parseResolveResponse(
       raw ||
       "The outcome text was malformed, and the dungeon referee calls the attempt a failure by default.",
     deathTag: null,
+    deathSummary: null,
   };
 }
 
