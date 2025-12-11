@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-llm-bg bg-llm-radial text-llm-text font-body;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background-color: rgba(255, 223, 107, 0.25);
+}
+
+/* Accessible but subtle focus styles */
+::where(button, a, input, textarea) {
+  @apply outline-none;
+}
+
+::where(button, a, input, textarea):focus-visible {
+  @apply ring-2 ring-llm-accent ring-offset-2 ring-offset-llm-bg;
+}
+
+input,
+textarea {
+  font-size: 16px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+
