@@ -78,21 +78,21 @@ function reviveState(raw: unknown): DungeonState | null {
     return null;
   }
   const party: LLMing[] = (value.party as LLMing[]).map((p, idx) => {
-    // Backwards-compatible revive for when characterClass did not exist yet.
-    if (!p.characterClass) {
-      // Simple deterministic fallback based on index so it's stable per load.
-      const classes: LLMing["characterClass"][] = [
-        "barbarian",
-        "wizard",
-        "thief",
-        "rogue",
-        "druid",
-        "paladin",
-      ];
-      const fallbackClass = classes[idx % classes.length];
-      return { ...p, characterClass: fallbackClass };
-    }
-    return p;
+    // Backwards-compatible revive for when characterClass and deathTag did not exist yet.
+    const classes: LLMing["characterClass"][] = [
+      "barbarian",
+      "wizard",
+      "thief",
+      "rogue",
+      "druid",
+      "paladin",
+    ];
+    const fallbackClass = classes[idx % classes.length];
+    return {
+      ...p,
+      characterClass: p.characterClass ?? fallbackClass,
+      deathTag: p.deathTag ?? null,
+    };
   });
   const encounters: Encounter[] = value.encounters.map(
     (e: any, idx: number) => ({
@@ -233,9 +233,11 @@ export function useDungeonGameState() {
             outcome: result.success ? "success" : "failure",
             cardSummary: result.card.summary,
           };
+          const isFatal = !result.success;
           return {
             ...member,
-            alive: result.success ? member.alive : false,
+            alive: isFatal ? false : member.alive,
+            deathTag: isFatal ? result.deathTag ?? member.deathTag ?? null : member.deathTag ?? null,
             history: [...member.history, historyEntry],
           };
         });

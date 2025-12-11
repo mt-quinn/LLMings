@@ -19,12 +19,12 @@ export type Trait =
   | "Lucky";
 
 export type CharacterClass =
-  | "barbarian"
-  | "wizard"
-  | "thief"
-  | "rogue"
-  | "druid"
-  | "paladin";
+  | "Barbarian"
+  | "Wizard"
+  | "Thief"
+  | "Rogue"
+  | "Druid"
+  | "Paladin";
 
 export type VoiceStyle =
   | "excitable stage directions"
@@ -41,6 +41,8 @@ export type LLMing = {
   characterClass: CharacterClass;
   voice: VoiceStyle;
   alive: boolean;
+   // Two-word tag describing how they died (e.g. "red mist"), set after a fatal encounter.
+  deathTag?: string | null;
   history: LLMingHistoryEntry[];
 };
 
@@ -70,6 +72,8 @@ export type EncounterResult = {
   card: ActionCard;
   success: boolean;
   vignette: string;
+  // Two-word description of death for failure cases (e.g. "red mist"), null for successes.
+  deathTag?: string | null;
 };
 
 // Simple deterministic RNG so that daily runs are stable per date key.
@@ -85,18 +89,46 @@ function makeRng(seed: string) {
 }
 
 const NAME_POOL = [
-  "Jori",
-  "Ellu",
-  "Pip",
-  "Ralla",
-  "Brindle",
-  "Merrit",
-  "Kess",
-  "Vex",
-  "Loam",
-  "Nyra",
-  "Tamble",
-  "Grym",
+  // Chunky, bouncy, onomatopoeic LLMing names
+  "Chunk",
+  "Blocky",
+  "Whumps",
+  "Clogs",
+  "Bloopy",
+  "Oopsy",
+  "Plonk",
+  "Clatter",
+  "Thwip",
+  "Plink",
+  "Bopple",
+  "Snork",
+  "Glomp",
+  "Crinkle",
+  "Squidge",
+  "Blorp",
+  "Thunk",
+  "Muddle",
+  "Skitter",
+  "Plod",
+  "Flump",
+  "Boing",
+  "Skronk",
+  "Crumpet",
+  "Tumbles",
+  "Scuff",
+  "Splat",
+  "Rumple",
+  "Doodle",
+  "Fidget",
+  "Wobble",
+  "Snaggle",
+  "Bumble",
+  "Clonk",
+  "Spronk",
+  "Grumble",
+  "Swizzle",
+  "Jumble",
+  "Smudge",
 ];
 
 const PERSONALITIES: Personality[] = [
@@ -153,6 +185,7 @@ export function generateParty(seed: string, count: number): LLMing[] {
       characterClass,
       voice,
       alive: true,
+      deathTag: null,
       history: [],
     });
   }

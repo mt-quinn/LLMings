@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Bungee, Space_Grotesk } from "next/font/google";
+import { Kanit, Space_Grotesk } from "next/font/google";
 
-const display = Bungee({
+const display = Kanit({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["700", "800"],
   variable: "--font-display",
 });
 

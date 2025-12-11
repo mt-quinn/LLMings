@@ -13,6 +13,10 @@ type ObstacleResponse = {
   obstacle: Obstacle;
 };
 
+type ObstaclesResponse = {
+  obstacles: Obstacle[];
+};
+
 type CardsResponse = {
   cards: ActionCard[];
 };
@@ -20,6 +24,7 @@ type CardsResponse = {
 type ResolveResponse = {
   success: boolean;
   vignette: string;
+  deathTag?: string | null;
 };
 
 export function Game() {
@@ -67,9 +72,93 @@ export function Game() {
     displayedObstacle,
   });
 
-  // Auto-generate the obstacle for the current encounter when needed.
+  // On first load, generate the full set of obstacles for the run in one call
+  // so the model can ensure variety across all five.
+  useEffect(() => {
+    if (!state || isComplete) return;
+    if (loadingObstacle) return;
+    // If we already have at least one obstacle, assume the dungeon has been generated.
+    const anyObstacle = state.encounters.some((e) => e.obstacle);
+    if (anyObstacle) return;
+
+    (async () => {
+      try {
+        setError(null);
+        setLoadingObstacle(true);
+        console.log("[LLMings] Requesting full obstacle set for dungeon run");
+
+        const res = await fetch("/api/obstacles", {
+          method: "POST",
+        });
+
+        const rawText = await res.text();
+        console.log(
+          "[LLMings] /api/obstacles raw response",
+          res.status,
+          rawText,
+        );
+        setDebugRawObstacle(rawText);
+
+        if (!res.ok) {
+          console.error(
+            "[LLMings] /api/obstacles HTTP error",
+            res.status,
+            rawText,
+          );
+          throw new Error(
+            `Failed to generate obstacles (${res.status}): ${rawText}`,
+          );
+        }
+
+        let data: ObstaclesResponse | null = null;
+        try {
+          data = JSON.parse(rawText) as ObstaclesResponse;
+        } catch (parseError) {
+          console.error(
+            "[LLMings] Failed to parse /api/obstacles JSON",
+            parseError,
+          );
+          throw new Error(
+            `Failed to parse obstacles JSON: ${(parseError as Error).message}`,
+          );
+        }
+
+        if (!data?.obstacles || data.obstacles.length === 0) {
+          throw new Error("Obstacles response missing 'obstacles' array");
+        }
+
+        // Map obstacles into the encounters by index; cap at available encounters.
+        data.obstacles.forEach((obstacle, idx) => {
+          if (!state.encounters[idx]) return;
+          const withIndex: Obstacle = {
+            ...obstacle,
+            index: idx,
+          };
+          console.log("[LLMings] Applying generated obstacle to encounter", {
+            idx,
+            obstacle: withIndex,
+          });
+          markObstacleGenerated(idx, withIndex);
+        });
+      } catch (e) {
+        console.error("Client dungeon obstacle set generation error:", e);
+        setError(
+          "Could not generate today's dungeon obstacles. Check the dev server logs for /api/obstacles errors.",
+        );
+      } finally {
+        setLoadingObstacle(false);
+      }
+    })();
+  }, [state, isComplete, loadingObstacle, markObstacleGenerated]);
+
+  // Auto-generate the obstacle for the current encounter if, for some reason,
+  // the full-dungeon generation did not populate it.
   useEffect(() => {
     if (!state || !currentEncounter || isComplete) return;
+    // If we already have any obstacles at all, rely on the full-dungeon effect;
+    // do not generate ad-hoc per-encounter obstacles in normal flow.
+    const anyObstacle = state.encounters.some((e) => e.obstacle);
+    if (anyObstacle) return;
     // If we already have an obstacle in either central state or local override,
     // don't re-request it.
     if (currentEncounter.obstacle || currentObstacleOverride || loadingObstacle)
@@ -281,6 +370,7 @@ export function Game() {
         card,
         success,
         vignette,
+        deathTag: !success ? data.deathTag ?? null : null,
       };
 
       applyEncounterResult(currentEncounter.index, result);
@@ -355,7 +445,7 @@ export function Game() {
             <div className="text-[0.6rem] tracking-[0.35em] uppercase text-llm-muted">
               Daily Dungeon
             </div>
-            <div className="font-display text-xl sm:text-2xl text-llm-accent drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+            <div className="font-display text-xl sm:text-2xl text-llm-accent tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
               LLMings
             </div>
           </div>
@@ -459,7 +549,9 @@ function PartyStrip({ party }: { party: LLMing[] }) {
               {p.personality} · {p.characterClass}
             </div>
             {!p.alive && (
-              <div className="text-[0.6rem] text-llm-danger">Fallen</div>
+              <div className="text-[0.6rem] text-llm-danger">
+                {p.deathTag ?? "fallen soul"}
+              </div>
             )}
           </div>
         ))}
@@ -645,7 +737,7 @@ function EndScreen(props: {
                     {p.name}
                   </span>
                   <span className="text-[0.7rem] text-llm-muted">
-                    {p.personality} · {p.trait}
+                    {p.personality} · {p.characterClass}
                   </span>
                 </div>
                 <div
@@ -653,7 +745,7 @@ function EndScreen(props: {
                     p.alive ? "text-llm-accent-alt" : "text-llm-danger"
                   }`}
                 >
-                  {p.alive ? "Survived" : "Fallen"}
+                  {p.alive ? "Survived" : p.deathTag ?? "Fallen"}
                 </div>
               </div>
               {deathEntry && (

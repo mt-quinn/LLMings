@@ -48,9 +48,10 @@ function buildObstaclePrompt(index: number): string {
 Create a single, vivid obstacle for a party of five adventurers traversing a fantasy dungeon.
 
 Rules:
-- The tone is playful, absurd, and slightly comedic, not grimdark.
+- The tone is adventurous and cinematic with room for eccentricity, not grimdark.
 - The party always progresses after the obstacle is resolved (success or failure is handled elsewhere).
 - Avoid explicit gore or real-world tragedies; keep deaths cartoonish if implied.
+- The obstacle must feel like a big, memorable D&D/roguelite setpiece that could realistically kill an unwary adventurer.
 - The description must be extremely short but flavorful.
 - Write the description as EXACTLY ONE simple sentence, maximum 18 words.
 - Do NOT describe how the obstacle can be solved, bypassed, tricked, disarmed, or outwitted.
@@ -61,7 +62,7 @@ Rules:
 This is obstacle number ${index + 1} out of 5 in today's dungeon.
 
 Respond ONLY with strict JSON in this shape (no extra text):
-{"title": "<short obstacle title>", "description": "<2 short sentences describing the situation>", "kind": "<one of: trap | monster | hazard | puzzle | weird>"}`.trim();
+{"title": "<short obstacle title>", "description": "<1 short sentence describing the situation>", "kind": "<one of: trap | monster | hazard | puzzle | weird>"}`.trim();
 }
 
 function parseObstacleResponse(raw: string, index: number): Obstacle {
